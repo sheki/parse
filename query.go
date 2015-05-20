@@ -12,13 +12,8 @@ type QueryOptions struct {
 	Where string
 }
 
-// Query performs a lookup of objects based on query options. destination must be
-// a slice of types satisfying the Object interface. 
-func (c *Client) Query(options *QueryOptions, destination interface{}) error {
-	className, err := objectTypeNameFromSlice(destination)
-	if err != nil {
-		return err
-	}
+// QueryClass performs a lookup of objects based on query options.
+func (c *Client) QueryClass(className string, options *QueryOptions, destination interface{}) error {
 	uri, err := url.Parse(fmt.Sprintf("/1/classes/%s", className))
 
 	if options != nil {
@@ -48,4 +43,14 @@ func (c *Client) Query(options *QueryOptions, destination interface{}) error {
 		return err
 	}
 	return json.Unmarshal(results.Results, destination)
+}
+
+// Query performs a lookup of objects based on query options. destination must be
+// a slice of types satisfying the Object interface.
+func (c *Client) Query(options *QueryOptions, destination interface{}) error {
+	className, err := objectTypeNameFromSlice(destination)
+	if err != nil {
+		return err
+	}
+	return c.QueryClass(className, options, destination)
 }

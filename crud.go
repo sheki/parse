@@ -27,12 +27,8 @@ func (c *Client) Create(object Object) (objectID string, err error) {
 	return id, nil
 }
 
-// Get populates the passed object by looking up based on objectID.
-func (c *Client) Get(objectID string, object Object) error {
-	className, err := objectTypeName(object)
-	if err != nil {
-		return err
-	}
+// GetClass populates the passed object by looking up based on Class name and objectID.
+func (c *Client) GetClass(className string, objectID string, object interface{}) error {
 	uri := fmt.Sprintf("/1/classes/%s/%s", className, objectID)
 	resp, err := c.doSimple("GET", uri)
 	if err != nil {
@@ -48,8 +44,17 @@ func (c *Client) Get(objectID string, object Object) error {
 	return json.Unmarshal(body, object)
 }
 
+// Get populates the passed object by looking up based on objectID.
+func (c *Client) Get(objectID string, object Object) error {
+	className, err := objectTypeName(object)
+	if err != nil {
+		return err
+	}
+	return c.GetClass(className, objectID, object)
+}
+
 // Update submits the JSON serialization of object and on success returns the
-// updaated time. The provided object is not modified.
+// updated time. The provided object is not modified.
 func (c *Client) Update(object Object) (updateTime time.Time, err error) {
 	className, err := objectTypeName(object)
 	if err != nil {
