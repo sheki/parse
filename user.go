@@ -90,20 +90,21 @@ func (c *Client) LoginUser(username, password string, user User) error {
 }
 
 // GetUser looks up a user by ID. The provided user is populated on success.
-func (c *Client) GetUser(userID string, user User) error {
+func (c *Client) GetUser(userID string) (*User, error) {
 	uri := fmt.Sprintf("/1/users/%s", userID)
 	resp, err := c.doSimple("GET", uri)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c.trace("GetUser", uri, string(body))
+	var user *User
 	// TODO(tmc): warn if not == .Zero() before populating?
-	return json.Unmarshal(body, user)
+	return user, json.Unmarshal(body, &user)
 }
 
 // UpdateUser updates the provided user with any provided fields and on success
