@@ -12,7 +12,7 @@ import (
 // connection to the Parse API
 type Client struct {
 	appID        string
-	apiKey       string
+	restApiKey   string
 	masterKey    string
 	sessionToken string
 
@@ -21,19 +21,22 @@ type Client struct {
 
 // NewClient creates a new Client to interact with the Parse API.
 func NewClient(parseAppID string, RESTAPIKey string) (*Client, error) {
-	return &Client{appID: parseAppID, apiKey: RESTAPIKey}, nil
+	return &Client{appID: parseAppID, restApiKey: RESTAPIKey}, nil
 }
 
-// SetMasterKey attaches a master key to subsequest API requests.NewClient
-// in lieu of the REST API Key. Setting to an empty string removes this behavior.
-func (c *Client) SetMasterKey(masterKey string) {
-	c.masterKey = masterKey
+// WithMasterKey returns a Client with the master key set instead of the REST API key.
+func (c *Client) WithMasterKey(masterKey string) *Client {
+	newClient, _ := NewClient(c.appID, "")
+	newClient.masterKey = masterKey
+	return newClient
 }
 
-// SetSessionToken attaches a session token to subsequent requests, authenticating
-// them as the user associated with the token.
-func (c *Client) SetSessionToken(sessionToken string) {
-	c.sessionToken = sessionToken
+// WithSessionToken returns a Client with the session token set, authenticating as the
+// user associated with the token.
+func (c *Client) WithSessionToken(sessionToken string) *Client {
+	newClient, _ := NewClient(c.appID, c.restApiKey)
+	newClient.sessionToken = sessionToken
+	return newClient
 }
 
 // TraceOn turns on API response tracing to the given logger.
@@ -61,7 +64,7 @@ func (c *Client) prepReq(method, url, contentType string, body io.Reader) (*http
 	if c.masterKey != "" {
 		req.Header.Add("X-Parse-Master-Key", c.masterKey)
 	} else {
-		req.Header.Add("X-Parse-REST-API-Key", c.apiKey)
+		req.Header.Add("X-Parse-REST-API-Key", c.restApiKey)
 	}
 	if c.sessionToken != "" {
 		req.Header.Add("X-Parse-Session-Token", c.sessionToken)
