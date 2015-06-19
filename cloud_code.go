@@ -10,6 +10,9 @@ import (
 // CallCloudFunction invokes the given cloud code function.
 // The arguments parameter is serialized as JSON and provided as parameters.
 func (c *Client) CallCloudFunction(functionName string, arguments interface{}) ([]byte, error) {
+	if arguments == nil {
+		arguments = map[string]interface{}{}
+	}
 	payload, err := json.Marshal(arguments)
 	if err != nil {
 		return nil, err
