@@ -10,6 +10,7 @@ import (
 // QueryOptions represents the parameters to a Parse query.
 type QueryOptions struct {
 	Where string
+	Limit int
 }
 
 // QueryClass performs a lookup of objects based on query options.
@@ -20,6 +21,9 @@ func (c *Client) QueryClass(className string, options *QueryOptions, destination
 		params := uri.Query()
 		if options.Where != "" {
 			params.Set("where", options.Where)
+		}
+		if options.Limit != 0 {
+			params.Set("limit", fmt.Sprint(options.Limit))
 		}
 		uri.RawQuery = params.Encode()
 	}
