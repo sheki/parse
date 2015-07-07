@@ -10,7 +10,7 @@ import (
 var (
 	ErrUnknown           = errors.New("An unknown error occurred")
 	ErrUnauthorized      = errors.New("Unauthorized")
-	ErrRequiresMasterKey = errors.New("Operation requires Master key") 
+	ErrRequiresMasterKey = errors.New("Operation requires Master key")
 
 	ErrAccountAlreadyLinked              = Error{Code: 208, Message: "An existing account already linked to another user."}
 	ErrCacheMiss                         = Error{Code: 120, Message: "The results were not found in the cache."}
@@ -82,11 +82,13 @@ func unmarshalError(r io.Reader) (error, bool) {
 	if r == nil {
 		return ErrUnauthorized, false
 	}
-	marshalErr := json.NewDecoder(r).Decode(&err)
-	if marshalErr == nil {
-		return errorByCode(err.Code), true
+	if marshalErr := json.NewDecoder(r).Decode(&err); marshalErr != nil {
+		return ErrUnknown, false
 	}
-	return err, marshalErr == nil
+	if byCode := errorByCode(err.Code); byCode != ErrUnknown {
+		return byCode, true
+	}
+	return err, false
 }
 
 var errsByCode map[int]Error

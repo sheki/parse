@@ -9,7 +9,7 @@ import (
 
 // CallCloudFunction invokes the given cloud code function.
 // The arguments parameter is serialized as JSON and provided as parameters.
-func (c *Client) CallCloudFunction(functionName string, arguments interface{}) ([]byte, error) {
+func (c *Client) CallCloudFunction(functionName string, arguments map[string]interface{}) ([]byte, error) {
 	if arguments == nil {
 		arguments = map[string]interface{}{}
 	}
@@ -25,6 +25,7 @@ func (c *Client) CallCloudFunction(functionName string, arguments interface{}) (
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		c.trace("CallCloudFunction err", uri, string(body))
 		return nil, err
 	}
 	c.trace("CallCloudFunction", uri, string(body))
@@ -46,6 +47,7 @@ func (c *Client) CallCloudJob(jobName string, arguments interface{}) ([]byte, er
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		c.trace("CallCloudJob err", uri, string(body))
 		return nil, err
 	}
 	c.trace("CallCloudJob", uri, string(body))

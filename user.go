@@ -46,24 +46,24 @@ type authData struct {
 	} `json:"twitter,omitempty"`
 }
 
-// CreateUser creates a user from the specified object. On success the new user's
-// ID and session token are returned. The provided object is not modified.
-func (c *Client) CreateUser(user User) (userID, sessionToken string, err error) {
+// CreateUser creates a user from the specified object. On success the new user is
+// returned. The provided object is not modified.
+func (c *Client) CreateUser(user User) (*ParseUser, error) {
 	payload, err := json.Marshal(user)
 	c.trace("CreateUser >", "/1/users", string(payload))
 	resp, err := c.doWithBody("POST", "/1/users", bytes.NewReader(payload))
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	var u ParseUser
+	var u *ParseUser
 	err = json.Unmarshal(body, &u)
 	c.trace("CreateUser <", "/1/users", string(body))
-	return u.ID, u.SessionToken, err
+	return u, err
 }
 
 // LoginUser attempts to log in a user given the provided name an password.
@@ -103,6 +103,24 @@ func (c *Client) GetUser(userID string) (*User, error) {
 	}
 	c.trace("GetUser", uri, string(body))
 	var user *User
+	// TODO(tmc): warn if not == .Zero() before populating?
+	return user, json.Unmarshal(body, &user)
+}
+
+// CurrentUser looks up the user associated with the provided credentials. The provided user is populated on success.
+func (c *Client) CurrentUser() (map[string]interface{}, error) {
+	uri := fmt.Sprintf("/1/users/me")
+	resp, err := c.doSimple("GET", uri)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	c.trace("CurrentUser", uri, string(body))
+	user := make(map[string]interface{})
 	// TODO(tmc): warn if not == .Zero() before populating?
 	return user, json.Unmarshal(body, &user)
 }

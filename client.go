@@ -89,18 +89,16 @@ func (c *Client) do(method, endpoint, contentType string, body io.Reader) (*http
 	req, err := c.prepReq(method, u.String(), contentType, body)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println("Do err:", err)
 		return nil, err
 	}
 	switch resp.StatusCode {
 	case 200:
 	case 201:
 	case 400:
+	case 404:
 		defer resp.Body.Close()
-		if err, ok := unmarshalError(resp.Body); ok {
-			return resp, err
-		}
-		return nil, ErrUnknown
+		err, _ := unmarshalError(resp.Body)
+		return nil, err
 	case 401:
 		return resp, ErrUnauthorized
 	default:

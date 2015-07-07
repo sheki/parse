@@ -10,7 +10,10 @@ import (
 // QueryOptions represents the parameters to a Parse query.
 type QueryOptions struct {
 	Where string
+	// Limit controls the maximum number of objects returned for a query
 	Limit int
+	// field(s) to order results by
+	Order string
 }
 
 // QueryClass performs a lookup of objects based on query options.
@@ -24,6 +27,9 @@ func (c *Client) QueryClass(className string, options *QueryOptions, destination
 		}
 		if options.Limit != 0 {
 			params.Set("limit", fmt.Sprint(options.Limit))
+		}
+		if options.Order != "" {
+			params.Set("order", fmt.Sprint(options.Order))
 		}
 		uri.RawQuery = params.Encode()
 	}
